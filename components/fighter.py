@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 __author__ = 'Alexei Evdokimov'
 
+from game_messages import Message
+
 
 class Fighter:
     def __init__(self, hp, defence, power):
@@ -26,13 +28,11 @@ class Fighter:
         damage = self.power - target.fighter.defence
 
         if damage > 0:
-            results.append({'message': '{0} attacks {1} for {2} hit points.'.format(
-                self.owner.name.capitalize(), target.name, str(damage)
-            )})
+            results.append({'message': Message('{0} attacks {1} for {2} hit points.'.format(
+                self.owner.name.capitalize(), target.name, str(damage)))})
             results.extend(target.fighter.take_damage(damage))
         else:
-            results.append({'message': '{0} attacks {1} but does no damage.'.format(
-                self.owner.name.capitalize(), target.name
-            )})
+            results.append({'message': Message('{0} attacks {1} but does no damage.'.format(
+                self.owner.name.capitalize(), target.name))})
 
         return results
