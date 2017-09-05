@@ -7,16 +7,28 @@ More Pythonic style and seems more OOP-ish ))
 '''
 
 import tdl
+
+from entity import Entity
 from input_handlers import handle_keys
+from map_utils import make_map
+from render_functions import clear_all, render_all
 
 
 def main():
     # set main game window size
     screen_width = 80
     screen_height = 60
+    map_width = 80
+    map_height = 55
 
-    player_x = int(screen_width / 2)
-    player_y = int(screen_height / 2)
+    colors = {
+        'dark_wall': (26, 20, 13),
+        'dark_ground': (51, 41, 26)
+    }
+
+    player = Entity(int(screen_width / 2), int(screen_height / 2), '@', (128, 102, 64))
+    npc = Entity(int(screen_width / 2) - 5, int(screen_height / 2), '@', (255, 255, 0))
+    entities = [player, npc]
 
     # Font differs from one in tutorial as I use this ti work in REXpaint
     tdl.set_font('cp437_12x12.png', greyscale=True, altLayout=False)
@@ -25,14 +37,16 @@ def main():
     root_console = tdl.init(screen_width, screen_height, title='MFRL revised tutorial')
     con = tdl.Console(screen_width, screen_height)
 
+    game_map = tdl.map.Map(map_width, map_height)
+    make_map(game_map)
+
     while not tdl.event.is_window_closed():
-        con.draw_char(player_x, player_y, '@', bg=None, fg=(128, 102, 64))
-        root_console.blit(con, 0, 0, screen_width, screen_height, 0, 0)
+        render_all(con, entities, game_map, root_console, screen_width, screen_height, colors)
 
         # And draw it all
         tdl.flush()
 
-        con.draw_char(player_x, player_y, ' ', bg=None)
+        clear_all(con, entities)
 
         for event in tdl.event.get():
             if event.type == 'KEYDOWN':
@@ -55,15 +69,15 @@ def main():
         action = handle_keys(user_input)
 
         move = action.get('move')
-        exit = action.get('exit')
+        exit_game = action.get('exit')
         fullscreen = action.get('fullscreen')
 
         if move:
             dx, dy = move
-            player_x += dx
-            player_y += dy
+            if game_map.walkable[player.x + dx, player.y + dy]:
+                player.move(dx, dy)
 
-        if exit:
+        if exit_game:
             return True  # Exit main loop and the game
 
         if fullscreen:
