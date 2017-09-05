@@ -21,6 +21,10 @@ def main():
     map_width = 80
     map_height = 55
 
+    room_max_size = 10
+    room_min_size = 6
+    max_rooms = 30
+
     colors = {
         'dark_wall': (26, 20, 13),
         'dark_ground': (51, 41, 26)
@@ -38,7 +42,7 @@ def main():
     con = tdl.Console(screen_width, screen_height)
 
     game_map = tdl.map.Map(map_width, map_height)
-    make_map(game_map)
+    make_map(game_map, max_rooms, room_min_size, room_max_size, map_width, map_height, player)
 
     while not tdl.event.is_window_closed():
         render_all(con, entities, game_map, root_console, screen_width, screen_height, colors)
