@@ -1,9 +1,11 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 __author__ = 'Alexei Evdokimov'
+'''
+Deprecated as change tutorial from one at RogueBasin to Rogueliketutorials.com
+'''
 
 import tdl
-#from mfrlHelpers import GameObject
 
 # actual size of the window
 SCREEN_WIDTH = 90
