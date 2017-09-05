@@ -4,6 +4,10 @@ __author__ = 'Alexei Evdokimov'
 
 
 def handle_keys(user_input):
+    key_char = user_input.char
+
+    #TODO: implement Vim keys for movement
+
     # Movement keys
     if user_input.key == 'UP' or user_input.key == 'KP8':
         return {'move': (0, -1)}
