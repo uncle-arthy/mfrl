@@ -8,7 +8,8 @@ More Pythonic style and seems more OOP-ish ))
 
 import tdl
 
-from entity import Entity
+from entity import Entity, get_blocking_entities_at_location
+from game_states import GameStates
 from input_handlers import handle_keys
 from map_utils import GameMap, make_map
 from render_functions import clear_all, render_all
@@ -25,20 +26,23 @@ def main():
     room_min_size = 6
     max_rooms = 30
 
-    fov_algorithm = 'BASIC'
+    fov_algorithm = 'PERMISSIVE'
     fov_light_walls = True
     fov_radius = 10
+
+    max_monsters_per_room = 3
 
     colors = {
         'dark_wall': (26, 26, 26),
         'dark_ground': (51, 51, 51),
         'light_wall': (26, 20, 13),
-        'light_ground': (51, 41, 26)
+        'light_ground': (51, 41, 26),
+        'desaturated_green': (63, 127, 63),
+        'darker_green': (0, 127, 0)
     }
 
-    player = Entity(int(screen_width / 2), int(screen_height / 2), '@', (128, 102, 64))
-    npc = Entity(int(screen_width / 2) - 5, int(screen_height / 2), '@', (255, 255, 0))
-    entities = [player, npc]
+    player = Entity(0, 0, '@', (128, 102, 64), 'Player', blocks=True)
+    entities = [player]
 
     # Font differs from one in tutorial as I use this ti work in REXpaint
     tdl.set_font('cp437_12x12.png', greyscale=True, altLayout=False)
@@ -48,9 +52,12 @@ def main():
     con = tdl.Console(screen_width, screen_height)
 
     game_map = GameMap(map_width, map_height)
-    make_map(game_map, max_rooms, room_min_size, room_max_size, map_width, map_height, player)
+    make_map(game_map, max_rooms, room_min_size, room_max_size, map_width, map_height, player, entities,
+             max_monsters_per_room, colors)
 
     fov_recompute = True
+
+    game_state = GameStates.PLAYERS_TURN
 
     while not tdl.event.is_window_closed():
         if fov_recompute:
@@ -89,18 +96,35 @@ def main():
         exit_game = action.get('exit')
         fullscreen = action.get('fullscreen')
 
-        if move:
+        if move and game_state == GameStates.PLAYERS_TURN:
             dx, dy = move
-            if game_map.walkable[player.x + dx, player.y + dy]:
-                player.move(dx, dy)
+            destination_x = player.x + dx
+            destination_y = player.y + dy
 
-                fov_recompute = True
+            if game_map.walkable[destination_x, destination_y]:
+                target = get_blocking_entities_at_location(entities,destination_x, destination_y)
+
+                if target:
+                    print('You kicked the ' + target.name + ' in the shins, much to its annoyance!')
+                else:
+                    player.move(dx, dy)
+
+                    fov_recompute = True
+
+                game_state = GameStates.ENEMY_TURN
 
         if exit_game:
             return True  # Exit main loop and the game
 
         if fullscreen:
             tdl.set_fullscreen(not tdl.get_fullscreen())
+
+        if game_state == GameStates.ENEMY_TURN:
+            for entity in entities:
+                if entity != player:
+                    print('The ' + entity.name + ' ponders the meaning of its existence.')
+
+            game_state = GameStates.PLAYERS_TURN
 
 
 if __name__ == '__main__':

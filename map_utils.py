@@ -4,6 +4,7 @@ __author__ = 'Alexei Evdokimov'
 
 from random import randint
 from tdl.map import Map
+from entity import Entity
 
 
 class GameMap(Map):
@@ -50,8 +51,24 @@ def create_v_tunnel(game_map, y1, y2, x):
         game_map.transparent[x, y] = True
 
 
+def place_entities(room, entities, max_monsters_per_room, colors):
+    number_of_monsters = randint(0, max_monsters_per_room)
 
-def make_map(game_map, max_rooms, room_min_size, room_max_size, map_width, map_height, player):
+    for i in range(number_of_monsters):
+        x = randint(room.x1 + 1, room.x2 - 1)
+        y = randint(room.y1 + 1, room.y2 - 1)
+
+        if not any([entity for entity in entities if entity.x == x and entity.y == y]):
+            if randint(0, 100) < 80:
+                monster = Entity(x, y, 'O', colors.get('desaturated_green'), 'Orc', blocks=True)
+            else:
+                monster = Entity(x, y, 'T', colors.get('darker_green'), 'Troll', blocks=True)
+
+            entities.append(monster)
+
+
+def make_map(game_map, max_rooms, room_min_size, room_max_size, map_width, map_height, player, entities,
+             max_monsters_per_room, colors):
     rooms = []
     num_rooms = 0
 
@@ -100,6 +117,8 @@ def make_map(game_map, max_rooms, room_min_size, room_max_size, map_width, map_h
                     create_v_tunnel(game_map, prev_y, new_y, prev_x)
                     create_h_tunnel(game_map, prev_x, new_x, new_y)
 
-                    # finally, append the new room to the list
+            place_entities(new_room, entities, max_monsters_per_room, colors)
+
+            # finally, append the new room to the list
             rooms.append(new_room)
             num_rooms += 1
